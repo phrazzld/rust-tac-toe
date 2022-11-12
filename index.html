@@ -8,7 +8,25 @@
   <title>Rust-Tac-Toe</title>
   <script type="module" src="/src/main.ts" defer></script>
   <style>
+    /* Style the container */
+    .container {
+      display: block;
+      position: relative;
+      padding-left: 35px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      font-size: 22px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
     /* Style the tic-tac-toe board */
+    .board {
+      padding: 10px;
+    }
+
     .cell {
       border: 1px solid black;
       width: 100px;
@@ -17,6 +35,21 @@
       justify-content: center;
       align-items: center;
       font-size: 4rem;
+    }
+
+    /* Style the game status */
+    .status {
+      font-size: 2rem;
+    }
+
+    /* Style the reset button */
+    #reset {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 1px solid black;
+      border-radius: 0.25rem;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -43,6 +76,12 @@
         <div class="cell" id="cell-2-2"></div>
       </div>
     </div>
+
+    <!-- Display game status -->
+    <div id="status"></div>
+
+    <!-- Reset button -->
+    <button id="reset">Reset</button>
   </div>
 </body>
 

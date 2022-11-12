@@ -1,8 +1,8 @@
 [package]
 name = "rust-tac-toe"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.0.1"
+description = "A tic-tac-toe game written in Rust"
+authors = ["phaedrus"]
 license = ""
 repository = ""
 edition = "2021"

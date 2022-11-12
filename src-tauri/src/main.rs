@@ -2,13 +2,14 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
+use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tauri::State;
 
 struct BoardState(Arc<Mutex<Board>>);
 
 // Manage possible states of tic-tac-toe cells
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 enum CellState {
     Empty,
     X,
@@ -16,7 +17,7 @@ enum CellState {
 }
 
 // Manage possible states of the game
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 enum GameState {
     XTurn,
     OTurn,
@@ -26,6 +27,7 @@ enum GameState {
 }
 
 // Manage the game board
+#[derive(Clone, Copy, Serialize, Deserialize)]
 struct Board {
     cells: [[CellState; 3]; 3],
     state: GameState,
@@ -43,6 +45,11 @@ impl Board {
 
 // Manage the game logic
 impl Board {
+    fn reset(&mut self) {
+        self.cells = [[CellState::Empty; 3]; 3];
+        self.state = GameState::XTurn;
+    }
+
     fn make_move(&mut self, row: usize, col: usize) {
         if self.state == GameState::XTurn {
             self.cells[row][col] = CellState::X;
@@ -134,40 +141,23 @@ fn click_cell(x: i32, y: i32, board: State<'_, BoardState>) -> String {
     if cell == CellState::Empty {
         board.make_move(x as usize, y as usize);
         board.check_win();
-        if board.state == GameState::XWon {
-            return "X won!".to_string();
-        } else if board.state == GameState::OWon {
-            return "O won!".to_string();
-        } else if board.is_draw() {
-            return "Draw!".to_string();
-        }
-        if cell == CellState::Empty {
-            cell = CellState::X;
-        } else if cell == CellState::X {
-            cell = CellState::O;
-        } else if cell == CellState::O {
-            cell = CellState::X;
-        }
     }
-    // Return the whole board
-    format!(
-        "{}{}{}{}{}{}{}{}{}",
-        board.cells[0][0] as i32,
-        board.cells[0][1] as i32,
-        board.cells[0][2] as i32,
-        board.cells[1][0] as i32,
-        board.cells[1][1] as i32,
-        board.cells[1][2] as i32,
-        board.cells[2][0] as i32,
-        board.cells[2][1] as i32,
-        board.cells[2][2] as i32
-    )
+
+    serde_json::to_string(&board.clone()).unwrap()
+}
+
+// Reset the board
+#[tauri::command]
+fn reset_board(board: State<'_, BoardState>) -> String {
+    let mut board = board.0.lock().unwrap();
+    board.reset();
+    serde_json::to_string(&board.clone()).unwrap()
 }
 
 fn main() {
     tauri::Builder::default()
         .manage(BoardState(Arc::new(Mutex::new(Board::new()))))
-        .invoke_handler(tauri::generate_handler![click_cell])
+        .invoke_handler(tauri::generate_handler![click_cell, reset_board])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
